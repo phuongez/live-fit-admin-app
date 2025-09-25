@@ -11,9 +11,9 @@ export default function Home() {
   const [phone, setPhone] = useState("");
   const [branchId, setBranchId] = useState("");
 
-  const create = trpc.customers.create.useMutation({
-    onSuccess: () => router.push("/customers"),
-  });
+  // const create = trpc.customers.create.useMutation({
+  //   onSuccess: () => router.push("/customers"),
+  // });
 
   return (
     <div className="max-w-md space-y-3">
@@ -33,8 +33,8 @@ export default function Home() {
         onChange={(e) => setBranchId(e.target.value)}
       />
       <button
-        onClick={() => create.mutate({ fullName, phone, branchId })}
-        disabled={create.isLoading}
+      // onClick={() => create.mutate({ fullName, phone, branchId })}
+      // disabled={create.isLoading}
       >
         Tạo khách hàng
       </button>
