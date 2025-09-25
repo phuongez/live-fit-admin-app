@@ -3,7 +3,7 @@
 // import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Input, Button } from "../components/ui"; // giả sử đã export
+// import { input, Button } from "../components/ui"; // giả sử đã export
 
 export default function Home() {
   const router = useRouter();
@@ -17,27 +17,27 @@ export default function Home() {
 
   return (
     <div className="max-w-md space-y-3">
-      <Input
+      <input
         placeholder="Họ tên"
         value={fullName}
         onChange={(e) => setFullName(e.target.value)}
       />
-      <Input
+      <input
         placeholder="SĐT"
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
       />
-      <Input
+      <input
         placeholder="Branch ID"
         value={branchId}
         onChange={(e) => setBranchId(e.target.value)}
       />
-      <Button
+      <button
         onClick={() => create.mutate({ fullName, phone, branchId })}
         disabled={create.isLoading}
       >
         Tạo khách hàng
-      </Button>
+      </button>
     </div>
   );
 }
