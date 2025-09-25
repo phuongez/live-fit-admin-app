@@ -3,7 +3,7 @@
 // import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Input, Button } from "@/components/ui"; // giả sử đã export
+import { Input, Button } from "../components/ui"; // giả sử đã export
 
 export default function Home() {
   const router = useRouter();
