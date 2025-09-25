@@ -23,6 +23,15 @@ export async function POST(req: Request) {
       });
     }
 
+    if (payload.type === "user.deleted") {
+      const { id } = payload.data;
+
+      // Xoá Member liên kết với Clerk userId
+      await prisma.member.delete({
+        where: { userId: id },
+      });
+    }
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Error handling Clerk webhook:", err);
