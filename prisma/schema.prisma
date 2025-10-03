@@ -111,6 +111,22 @@ model Member {
   avatarUrl String?
   createdAt DateTime @default(now())
 
+  // Thông tin cá nhân
+  status         String?   // Full time, Part time, Đã nghỉ
+  dateOfBirth    DateTime?
+  nationalId     String?   // Số CCCD
+  email          String?
+  phone          String?
+  currentAddress String?
+  permanentAddress String?
+  bankAccount    String?
+  bankName       String?
+  bankHolder     String?
+  startDate      DateTime?
+  achievements   String?   // Thành tích (text)
+  experience     String?   // Kinh nghiệm (text)
+  certificates   String?   // Bằng cấp - chứng chỉ (text)
+
   // Quan hệ tổ chức
   branches          MemberBranch[]
 
@@ -134,13 +150,12 @@ model Member {
   kpiAssignedBy     KPIAssignment[] @relation("KPIAssignmentsCreatedBy")   // mình giao cho người khác
   kpiLogs           KPILog[]         @relation("KPILogsForMember")
   payrolls          Payroll[]        @relation("PayrollsForMember")
-
-  
 }
 
 // ===== Khách hàng (CRM) =====
 model Customer {
   id           String        @id @default(cuid())
+  code      String   @unique
   type         CustomerType
   fullName     String
   dateOfBirth  DateTime?

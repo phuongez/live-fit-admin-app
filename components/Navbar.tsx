@@ -43,9 +43,8 @@ export default function Navbar() {
           {navItems
             .filter((item) => isAllowed(item.roles))
             .map((item) => (
-              <Button className="bg-primary hover:bg-amber-50">
+              <Button className="bg-primary hover:bg-amber-50" key={item.path}>
                 <Link
-                  key={item.path}
                   href={item.path}
                   className="text-black font-medium text-sm "
                 >
@@ -54,6 +53,16 @@ export default function Navbar() {
               </Button>
             ))}
         </div>
+        {user && (
+          <Button className="bg-primary hover:bg-amber-50">
+            <Link
+              href={`/members/${user.id}`}
+              className="text-black font-medium text-sm "
+            >
+              Hồ sơ của tôi
+            </Link>
+          </Button>
+        )}
       </div>
       <header className="flex self justify-end items-center p-2 gap-4 h-fit">
         <SignedOut>

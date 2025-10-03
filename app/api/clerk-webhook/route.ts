@@ -19,6 +19,7 @@ export async function POST(req: Request) {
           userId: id,
           fullName: fullName || "Unnamed",
           avatarUrl: image_url,
+          email: email_addresses[0].email_address,
         },
       });
     }
