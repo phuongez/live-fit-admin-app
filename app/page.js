@@ -287,12 +287,14 @@ export default function CustomerIndex() {
                       <span>{source || "Nguồn khách hàng"}</span>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="referral">Referral</SelectItem>
-                      <SelectItem value="hotline">Hotline</SelectItem>
-                      <SelectItem value="uid">UID</SelectItem>
-                      <SelectItem value="google">Google Ads</SelectItem>
-                      <SelectItem value="tiktok">Tiktok Ads</SelectItem>
-                      <SelectItem value="website">Website</SelectItem>
+                      <SelectItem value="REFERRAL">Referral</SelectItem>
+                      <SelectItem value="HOTLINE">Hotline</SelectItem>
+                      <SelectItem value="CARE">Care</SelectItem>
+                      <SelectItem value="COACH">Coach</SelectItem>
+                      <SelectItem value="UID">UID</SelectItem>
+                      <SelectItem value="GOOGLE_ADS">Google Ads</SelectItem>
+                      <SelectItem value="TIKTOK_ADS">Tiktok Ads</SelectItem>
+                      <SelectItem value="WEBSITE">Website</SelectItem>
                     </SelectContent>
                   </Select>
                   <Input placeholder="Tên giám hộ (nếu khách hàng là trẻ nhỏ)" />

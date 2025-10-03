@@ -313,7 +313,7 @@ export default function MemberProfile({ id }) {
 
       <div className="grid grid-cols-2 gap-4">
         {/* Họ và tên */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="fullName">Họ và tên</Label>
           <Input
             id="fullName"
@@ -323,7 +323,7 @@ export default function MemberProfile({ id }) {
         </div>
 
         {/* Vị trí */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="role">Vị trí</Label>
           {isManagerOrAdmin ? (
             <Select
@@ -345,7 +345,7 @@ export default function MemberProfile({ id }) {
         </div>
 
         {/* Trạng thái */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label>Trạng thái</Label>
           <Select
             value={member.status || ""}
@@ -361,7 +361,7 @@ export default function MemberProfile({ id }) {
         </div>
 
         {/* Ngày sinh */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="dateOfBirth">Ngày sinh</Label>
           <Input
             id="dateOfBirth"
@@ -372,7 +372,7 @@ export default function MemberProfile({ id }) {
         </div>
 
         {/* CCCD */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="nationalId">Số CCCD</Label>
           <Input
             id="nationalId"
@@ -382,7 +382,7 @@ export default function MemberProfile({ id }) {
         </div>
 
         {/* Email */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
@@ -392,7 +392,7 @@ export default function MemberProfile({ id }) {
         </div>
 
         {/* Số điện thoại */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="phone">Số điện thoại</Label>
           <Input
             id="phone"
@@ -402,7 +402,7 @@ export default function MemberProfile({ id }) {
         </div>
 
         {/* Ngân hàng */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="bankAccount">Số tài khoản</Label>
           <Input
             id="bankAccount"
@@ -410,7 +410,7 @@ export default function MemberProfile({ id }) {
             onChange={(e) => handleChange("bankAccount", e.target.value)}
           />
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="bankName">Tên ngân hàng</Label>
           <Input
             id="bankName"
@@ -418,7 +418,7 @@ export default function MemberProfile({ id }) {
             onChange={(e) => handleChange("bankName", e.target.value)}
           />
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="bankHolder">Chủ tài khoản</Label>
           <Input
             id="bankHolder"
@@ -428,7 +428,7 @@ export default function MemberProfile({ id }) {
         </div>
 
         {/* Ngày bắt đầu */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="startDate">Ngày bắt đầu</Label>
           <Input
             id="startDate"
@@ -441,35 +441,35 @@ export default function MemberProfile({ id }) {
 
       {/* Textarea fields */}
       <div className="flex flex-col gap-4">
-        <div>
+        <div className="flex flex-col gap-2">
           <Label>Địa chỉ hiện tại</Label>
           <Textarea
             value={member.currentAddress || ""}
             onChange={(e) => handleChange("currentAddress", e.target.value)}
           />
         </div>
-        <div>
+        <div className="flex flex-col gap-2">
           <Label>Địa chỉ thường trú</Label>
           <Textarea
             value={member.permanentAddress || ""}
             onChange={(e) => handleChange("permanentAddress", e.target.value)}
           />
         </div>
-        <div>
+        <div className="flex flex-col gap-2">
           <Label>Thành tích</Label>
           <Textarea
             value={member.achievements || ""}
             onChange={(e) => handleChange("achievements", e.target.value)}
           />
         </div>
-        <div>
+        <div className="flex flex-col gap-2">
           <Label>Kinh nghiệm</Label>
           <Textarea
             value={member.experience || ""}
             onChange={(e) => handleChange("experience", e.target.value)}
           />
         </div>
-        <div>
+        <div className="flex flex-col gap-2">
           <Label>Bằng cấp - chứng chỉ</Label>
           <Textarea
             value={member.certificates || ""}
@@ -480,7 +480,7 @@ export default function MemberProfile({ id }) {
 
       <div className="flex justify-end">
         <Button
-          className="bg-[#ffc634ff] text-black hover:opacity-90"
+          className="bg-[#ffc634ff] text-black hover:bg-black hover:text-white cursor-pointer"
           onClick={handleSave}
         >
           Lưu thay đổi

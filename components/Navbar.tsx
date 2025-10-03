@@ -14,7 +14,7 @@ import Logo from "../imgs/livefitlogo.png";
 import { Button } from "./ui/button";
 
 const navItems = [
-  { label: "Khách hàng", path: "/khachhang", roles: ["ALL"] },
+  { label: "Khách hàng", path: "/", roles: ["ALL"] },
   { label: "Hợp đồng", path: "/hopdong", roles: ["ALL"] },
   { label: "Đặt lịch tập", path: "/lichtap", roles: ["ALL"] },
   { label: "Nhân sự", path: "/nhansu", roles: ["ADMIN", "MANAGER"] },
@@ -38,7 +38,15 @@ export default function Navbar() {
     <div className="flex items-center justify-between bg-[#ffc634ff] shadow px-4">
       {/* Links */}
       <div className="flex justify-between items-center gap-6">
-        <Image src={Logo} alt="logo" width={40} height={40} className="py-2" />
+        <Link href="/">
+          <Image
+            src={Logo}
+            alt="logo"
+            width={40}
+            height={40}
+            className="py-2"
+          />
+        </Link>
         <div className="flex space-x-6">
           {navItems
             .filter((item) => isAllowed(item.roles))
