@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export async function GET(req, context) {
   const { id } = await context.params; // ✅ unwrap params
-  const member = await prisma.member.findUnique({ where: { id } });
+  const member = await prisma.member.findUnique({ where: { userId: id } });
   return NextResponse.json(member);
 }
 
@@ -16,7 +16,7 @@ export async function PATCH(req, context) {
   const body = await req.json();
 
   const updated = await prisma.member.update({
-    where: { id },
+    where: { userId: id },
     data: body,
   });
 
