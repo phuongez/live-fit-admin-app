@@ -28,8 +28,21 @@ import { Badge } from "@/components/ui/badge";
 
 export default function CustomerIndex() {
   const [open, setOpen] = useState(false);
-  const [branch, setBranch] = useState("ALL");
+
   const [customerCode, setCustomerCode] = useState("");
+
+  // Cơ sở khách tập
+  const [branches, setBranches] = useState([]);
+  const [branch, setBranch] = useState("ALL");
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      const res = await fetch("/api/branches");
+      const data = await res.json();
+      setBranches(data);
+    };
+    fetchBranches();
+  }, []);
 
   // State của form
   const [fullName, setFullName] = useState("");
@@ -271,15 +284,14 @@ export default function CustomerIndex() {
                   />
                   <Select value={branch} onValueChange={setBranch}>
                     <SelectTrigger>
-                      {branch === "ALL" ? "Mặc định (ALL)" : branch}
+                      {branches.find(b => b.id === branch)?.name || "Chọn chi nhánh"}
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ALL">Mặc định (ALL)</SelectItem>
-                      <SelectItem value="BTX">Bùi Thị Xuân</SelectItem>
-                      <SelectItem value="TK">Thuỵ Khuê</SelectItem>
-                      <SelectItem value="OCEAN">Ocean Park</SelectItem>
-                      <SelectItem value="NVC">Nguyễn Văn Cừ</SelectItem>
-                      <SelectItem value="SGP">Sài Gòn Pearl</SelectItem>
+                      {branches.map(b => (
+                        <SelectItem key={b.id} value={b.id}>
+                          {b.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <Select value={source} onValueChange={setSource}>

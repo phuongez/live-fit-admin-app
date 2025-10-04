@@ -12,11 +12,11 @@ datasource db {
 
 // ===== Enums =====
 enum Role {
-  JUNIOR       // HLV thử việc
-  SENIOR       // HLV chuyên bán
-  SERVICE      // HLV chuyên dạy
-  SUPERVISOR   // HLV cao cấp
-  MANAGER      // Quản lý (1 manager có thể quản nhiều chi nhánh)
+  JUNIOR // HLV thử việc
+  SENIOR // HLV chuyên bán
+  SERVICE // HLV chuyên dạy
+  SUPERVISOR // HLV cao cấp
+  MANAGER // Quản lý (1 manager có thể quản nhiều chi nhánh)
   ADMIN
 }
 
@@ -37,8 +37,8 @@ enum CustomerStage {
 enum CustomerSource {
   REFERRAL
   HOTLINE
-  CARE         // chăm sóc lại
-  COACH        // HLV giới thiệu
+  CARE // chăm sóc lại
+  COACH // HLV giới thiệu
   UID
   GOOGLE_ADS
   TIKTOK_ADS
@@ -46,8 +46,8 @@ enum CustomerSource {
 }
 
 enum ContractCategory {
-  STANDARD   // Hợp đồng thường
-  GIFT       // Hợp đồng tặng kèm
+  STANDARD // Hợp đồng thường
+  GIFT // Hợp đồng tặng kèm
 }
 
 enum ContractAudience {
@@ -76,28 +76,28 @@ enum ScheduleStatus {
 
 // ===== Tổ chức =====
 model Branch {
-  id        String         @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
   address   String?
-  createdAt DateTime       @default(now())
+  createdAt DateTime @default(now())
 
   members   MemberBranch[]
   rooms     Room[]
   customers Customer[]
 
-  contracts Contract[]     // đối ứng với Contract.branch
-  schedules Schedule[]     // đối ứng với Schedule.branch
-  sessions  Session[]      // đối ứng với Session.branch
+  contracts Contract[] // đối ứng với Contract.branch
+  schedules Schedule[] // đối ứng với Schedule.branch
+  sessions  Session[] // đối ứng với Session.branch
 }
 
 model MemberBranch {
-  id          String @id @default(cuid())
-  memberId    String
-  branchId    String
+  id           String @id @default(cuid())
+  memberId     String
+  branchId     String
   roleInBranch Role
 
-  member      Member @relation(fields: [memberId], references: [id])
-  branch      Branch @relation(fields: [branchId], references: [id])
+  member Member @relation(fields: [memberId], references: [id])
+  branch Branch @relation(fields: [branchId], references: [id])
 
   @@unique([memberId, branchId])
 }
@@ -105,107 +105,118 @@ model MemberBranch {
 // ===== Nhân sự =====
 model Member {
   id        String   @id @default(cuid())
-  userId    String   @unique   // Clerk user id
+  userId    String   @unique // Clerk user id
   fullName  String
   role      Role     @default(SERVICE)
   avatarUrl String?
   createdAt DateTime @default(now())
 
   // Thông tin cá nhân
-  status         String?   // Full time, Part time, Đã nghỉ
-  dateOfBirth    DateTime?
-  nationalId     String?   // Số CCCD
-  email          String?
-  phone          String?
-  currentAddress String?
+  status           String? // Full time, Part time, Đã nghỉ
+  dateOfBirth      DateTime?
+  nationalId       String? // Số CCCD
+  email            String?
+  phone            String?
+  currentAddress   String?
   permanentAddress String?
-  bankAccount    String?
-  bankName       String?
-  bankHolder     String?
-  startDate      DateTime?
-  achievements   String?   // Thành tích (text)
-  experience     String?   // Kinh nghiệm (text)
-  certificates   String?   // Bằng cấp - chứng chỉ (text)
+  bankAccount      String?
+  bankName         String?
+  bankHolder       String?
+  startDate        DateTime?
+  achievements     String? // Thành tích (text)
+  experience       String? // Kinh nghiệm (text)
+  certificates     String? // Bằng cấp - chứng chỉ (text)
 
   // Quan hệ tổ chức
-  branches          MemberBranch[]
+  branches MemberBranch[]
 
   // CRM: HLV chăm sóc + người tạo khách
-  customers         Customer[] @relation("CareCoach")
-  createdCustomers  Customer[] @relation("Creator")
+  customers        Customer[] @relation("CareCoach")
+  createdCustomers Customer[] @relation("Creator")
 
-  stageChanges CustomerStageLog[] @relation("ChangedByMember")
-  contractsCreated Contract[] @relation("ContractsCreated")
+  stageChanges     CustomerStageLog[] @relation("ChangedByMember")
+  contractsCreated Contract[]         @relation("ContractsCreated")
 
   // Hợp đồng: người bán & người dạy
-  soldContracts     Contract[] @relation("Seller")
-  serviceContracts  Contract[] @relation("ServiceCoach")
+  soldContracts    Contract[] @relation("Seller")
+  serviceContracts Contract[] @relation("ServiceCoach")
 
   // Lịch/Buổi
-  schedulesAsCoach  Schedule[] @relation("CoachSchedules")
-  sessionsAsCoach   Session[]  @relation("CoachSessions")
+  schedulesAsCoach Schedule[] @relation("CoachSchedules")
+  sessionsAsCoach  Session[]  @relation("CoachSessions")
 
   // KPI & Payroll
-  kpiAssignments    KPIAssignment[] @relation("KPIAssignmentsForMember")   // được giao
-  kpiAssignedBy     KPIAssignment[] @relation("KPIAssignmentsCreatedBy")   // mình giao cho người khác
-  kpiLogs           KPILog[]         @relation("KPILogsForMember")
-  payrolls          Payroll[]        @relation("PayrollsForMember")
+  kpiAssignments KPIAssignment[] @relation("KPIAssignmentsForMember") // được giao
+  kpiAssignedBy  KPIAssignment[] @relation("KPIAssignmentsCreatedBy") // mình giao cho người khác
+  kpiLogs        KPILog[]        @relation("KPILogsForMember")
+  payrolls       Payroll[]       @relation("PayrollsForMember")
+
+  uploadedPhotos ProgressPhoto[] @relation("MemberUploadedPhotos")
 }
 
 // ===== Khách hàng (CRM) =====
 model Customer {
-  id           String        @id @default(cuid())
-  code      String   @unique
-  type         CustomerType
-  fullName     String
-  dateOfBirth  DateTime?
-  gender       String?
-  avatarUrl    String?
+  id          String       @id @default(cuid())
+  code        String       @unique
+  type        CustomerType
+  fullName    String
+  dateOfBirth DateTime?
+  gender      String?
+  avatarUrl   String?
 
-  // Thông tin giám hộ (khi CHILD)
-  guardianName   String?
-  guardianPhone  String?
-  guardianZalo   String?
+  // Thông tin liên hệ & cá nhân
+  nationalId     String? // Số CCCD
+  currentAddress String? // Địa chỉ hiện tại
+  height         Float? // cm
+  weight         Float? // kg
+
+  // Thông tin giám hộ (nếu CHILD)
+  guardianName  String?
+  guardianPhone String?
+  guardianZalo  String?
 
   // Liên hệ
-  zaloPhone    String?
-  phones       CustomerPhone[]
-  needs        String?
-  source       CustomerSource?
+  zaloPhone String?
+  phones    CustomerPhone[]
+  needs     String?
+  source    CustomerSource?
 
-  // Pipeline hiện tại + log chuyển trạng thái
-  stage        CustomerStage @default(LEAD)
-  stageLogs    CustomerStageLog[]
+  // Hình ảnh tiến bộ
+  progressPhotos ProgressPhoto[]
+
+  // Pipeline
+  stage     CustomerStage      @default(LEAD)
+  stageLogs CustomerStageLog[]
 
   // Tổ chức
-  branchId     String
-  branch       Branch        @relation(fields: [branchId], references: [id])
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id])
 
-  // HLV chăm sóc (mặc định = người tạo)
-  careCoachId  String?
-  careCoach    Member?       @relation("CareCoach", fields: [careCoachId], references: [id])
+  // HLV chăm sóc (mặc định = người tạo hoặc HLV cơ sở)
+  careCoachId String?
+  careCoach   Member? @relation("CareCoach", fields: [careCoachId], references: [id])
 
-  createdById  String?
-  createdBy    Member?       @relation("Creator", fields: [createdById], references: [id])
+  createdById String?
+  createdBy   Member? @relation("Creator", fields: [createdById], references: [id])
 
   // Hợp đồng / Lịch / Điểm danh
-  contractsAsPrimary  Contract[]           @relation("PrimaryCustomer")
+  contractsAsPrimary   Contract[]            @relation("PrimaryCustomer")
   contractParticipants ContractParticipant[]
-  schedules Schedule[] @relation("CustomerSchedules")
-  attendances         SessionAttendance[]
+  schedules            Schedule[]            @relation("CustomerSchedules")
+  attendances          SessionAttendance[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model CustomerPhone {
-  id          String   @id @default(cuid())
-  customerId  String
-  phone       String
-  label       String?
-  isPrimary   Boolean  @default(false)
+  id         String  @id @default(cuid())
+  customerId String
+  phone      String
+  label      String?
+  isPrimary  Boolean @default(false)
 
-  customer    Customer @relation(fields: [customerId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
 
   @@unique([customerId, phone])
 }
@@ -219,54 +230,53 @@ model CustomerStageLog {
   changedById String?
   note        String?
 
-  customer    Customer @relation(fields: [customerId], references: [id])
-  changedBy   Member?  @relation("ChangedByMember", fields: [changedById], references: [id])
-  
+  customer  Customer @relation(fields: [customerId], references: [id])
+  changedBy Member?  @relation("ChangedByMember", fields: [changedById], references: [id])
 
   @@index([customerId, changedAt])
 }
 
 // ===== Hợp đồng =====
 model Contract {
-  id               String            @id @default(cuid())
+  id String @id @default(cuid())
 
-  category         ContractCategory
-  audience         ContractAudience
-  modality         ContractModality
+  category ContractCategory
+  audience ContractAudience
+  modality ContractModality
 
   // Khách chính (tiện truy vấn 1:1)
   primaryCustomerId String?
-  primaryCustomer   Customer?        @relation("PrimaryCustomer", fields: [primaryCustomerId], references: [id])
+  primaryCustomer   Customer? @relation("PrimaryCustomer", fields: [primaryCustomerId], references: [id])
 
   // Tham gia HĐ (1:1 hoặc 1:2)
-  participants     ContractParticipant[]
+  participants ContractParticipant[]
 
   // Nhân sự liên quan
-  sellerId         String?
-  seller           Member?           @relation("Seller", fields: [sellerId], references: [id])
+  sellerId String?
+  seller   Member? @relation("Seller", fields: [sellerId], references: [id])
 
-  serviceCoachId   String?
-  serviceCoach     Member?           @relation("ServiceCoach", fields: [serviceCoachId], references: [id])
+  serviceCoachId String?
+  serviceCoach   Member? @relation("ServiceCoach", fields: [serviceCoachId], references: [id])
 
-  branchId         String
-  branch           Branch            @relation(fields: [branchId], references: [id])
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id])
 
   // Tài chính theo thời điểm ký
-  totalSessions    Int
-  remaining        Int
-  pricePerSession  Decimal           @db.Decimal(10,2)
+  totalSessions   Int
+  remaining       Int
+  pricePerSession Decimal @db.Decimal(10, 2)
 
-  startDate        DateTime
-  endDate          DateTime?
-  status           ContractStatus    @default(ACTIVE)
+  startDate DateTime
+  endDate   DateTime?
+  status    ContractStatus @default(ACTIVE)
 
-  sessions         Session[]
-  payments         Payment[]
+  sessions Session[]
+  payments Payment[]
 
-  createdById      String?
-  createdBy   Member? @relation("ContractsCreated", fields: [createdById], references: [id])
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdById String?
+  createdBy   Member?  @relation("ContractsCreated", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   schedules Schedule[] @relation("ContractSchedules")
 
@@ -276,117 +286,114 @@ model Contract {
 }
 
 model ContractParticipant {
-  id          String   @id @default(cuid())
-  contractId  String
-  customerId  String
+  id         String @id @default(cuid())
+  contractId String
+  customerId String
 
-  contract    Contract @relation(fields: [contractId], references: [id])
-  customer    Customer @relation(fields: [customerId], references: [id])
+  contract Contract @relation(fields: [contractId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
 
   @@unique([contractId, customerId])
 }
 
 model Payment {
-  id          String   @id @default(cuid())
-  contractId  String
-  contract    Contract @relation(fields: [contractId], references: [id])
-  amount      Decimal  @db.Decimal(12,2)
-  method      String   // cash, bank, card, QR...
-  paidAt      DateTime @default(now())
+  id         String   @id @default(cuid())
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id])
+  amount     Decimal  @db.Decimal(12, 2)
+  method     String // cash, bank, card, QR...
+  paidAt     DateTime @default(now())
 
   @@index([contractId, paidAt])
 }
 
 // ===== Lịch & Buổi =====
 model Room {
-  id        String  @id @default(cuid())
+  id        String     @id @default(cuid())
   name      String
   branchId  String
-  branch    Branch  @relation(fields: [branchId], references: [id])
+  branch    Branch     @relation(fields: [branchId], references: [id])
   schedules Schedule[] @relation("RoomSchedules")
 }
 
 model Schedule {
-  id           String         @id @default(cuid())
-  branchId     String
-  branch       Branch         @relation(fields: [branchId], references: [id])
+  id       String @id @default(cuid())
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id])
 
-  contractId   String?
-  contract    Contract? @relation("ContractSchedules", fields: [contractId], references: [id])
+  contractId String?
+  contract   Contract? @relation("ContractSchedules", fields: [contractId], references: [id])
 
+  coachId String
+  coach   Member @relation("CoachSchedules", fields: [coachId], references: [id])
 
-  coachId      String
-  coach       Member @relation("CoachSchedules", fields: [coachId], references: [id])
+  roomId String?
+  room   Room?   @relation("RoomSchedules", fields: [roomId], references: [id])
 
+  startsAt DateTime
+  endsAt   DateTime
+  status   ScheduleStatus @default(BOOKED)
 
-  roomId       String?
-  room        Room? @relation("RoomSchedules", fields: [roomId], references: [id])
+  sessionId String?  @unique
+  session   Session? @relation("ScheduleToSession", fields: [sessionId], references: [id])
 
-  startsAt     DateTime
-  endsAt       DateTime
-  status       ScheduleStatus @default(BOOKED)
+  customerId String
+  customer   Customer @relation("CustomerSchedules", fields: [customerId], references: [id])
 
-  sessionId  String?  @unique
-  session    Session? @relation("ScheduleToSession", fields: [sessionId], references: [id])
-
-  customerId  String
-  customer    Customer @relation("CustomerSchedules", fields: [customerId], references: [id])
-
-
-  createdAt    DateTime       @default(now())
+  createdAt DateTime @default(now())
 
   @@index([branchId, startsAt])
   @@index([coachId, startsAt])
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  branchId     String
-  branch       Branch   @relation(fields: [branchId], references: [id])
+  id       String @id @default(cuid())
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id])
 
-  contractId   String
-  contract     Contract @relation(fields: [contractId], references: [id])
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id])
 
-  scheduleId   String?
-  schedule Schedule? @relation("ScheduleToSession")
+  scheduleId String?
+  schedule   Schedule? @relation("ScheduleToSession")
 
-  coachId      String
-  coach        Member   @relation("CoachSessions", fields: [coachId], references: [id])
+  coachId String
+  coach   Member @relation("CoachSessions", fields: [coachId], references: [id])
 
-  startedAt    DateTime
-  endedAt      DateTime?
-  consumed     Boolean  @default(false)
-  consumeNote  String?
+  startedAt   DateTime
+  endedAt     DateTime?
+  consumed    Boolean   @default(false)
+  consumeNote String?
 
-  attendances  SessionAttendance[]
+  attendances SessionAttendance[]
 
   @@index([branchId, startedAt])
 }
 
 model SessionAttendance {
-  id          String   @id @default(cuid())
-  sessionId   String
-  customerId  String
-  present     Boolean  @default(true)
-  note        String?
+  id         String  @id @default(cuid())
+  sessionId  String
+  customerId String
+  present    Boolean @default(true)
+  note       String?
 
-  session     Session  @relation(fields: [sessionId], references: [id])
-  customer    Customer @relation(fields: [customerId], references: [id])
+  session  Session  @relation(fields: [sessionId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
 
   @@unique([sessionId, customerId])
 }
 
 // ===== KPI & Payroll =====
 model KPIAssignment {
-  id                 String   @id @default(cuid())
-  memberId           String
-  month              Int
-  year               Int
+  id       String @id @default(cuid())
+  memberId String
+  month    Int
+  year     Int
 
   // Target (giao chỉ tiêu)
-  salesTarget        Decimal? @db.Decimal(12,2)
+  salesTarget        Decimal? @db.Decimal(12, 2)
   sessionsTarget     Int?
-  renewRateTarget    Decimal? @db.Decimal(5,2)   // %
+  renewRateTarget    Decimal? @db.Decimal(5, 2) // %
   newContractsTarget Int?
 
   // Người giao KPI (thường là Manager)
@@ -394,9 +401,9 @@ model KPIAssignment {
   assignedBy   Member? @relation("KPIAssignmentsCreatedBy", fields: [assignedById], references: [id])
 
   // Người được giao KPI
-  member       Member  @relation("KPIAssignmentsForMember", fields: [memberId], references: [id])
+  member Member @relation("KPIAssignmentsForMember", fields: [memberId], references: [id])
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([memberId, month, year])
 }
@@ -406,12 +413,12 @@ model KPILog {
   memberId       String
   month          Int
   year           Int
-  revenue        Decimal  @db.Decimal(12,2) @default(0)
+  revenue        Decimal  @default(0) @db.Decimal(12, 2)
   sessionsTaught Int      @default(0)
-  renewRate      Decimal? @db.Decimal(5,2)
+  renewRate      Decimal? @db.Decimal(5, 2)
   newContracts   Int      @default(0)
 
-  member         Member   @relation("KPILogsForMember", fields: [memberId], references: [id])
+  member Member @relation("KPILogsForMember", fields: [memberId], references: [id])
 
   @@unique([memberId, month, year])
 }
@@ -421,15 +428,26 @@ model Payroll {
   memberId     String
   month        Int
   year         Int
-  base         Decimal  @db.Decimal(12,2) @default(0)
-  perSession   Decimal  @db.Decimal(12,2) @default(0)
-  commission   Decimal  @db.Decimal(12,2) @default(0)
-  bonus        Decimal  @db.Decimal(12,2) @default(0)
-  penalty      Decimal  @db.Decimal(12,2) @default(0)
-  total        Decimal  @db.Decimal(12,2) @default(0)
+  base         Decimal  @default(0) @db.Decimal(12, 2)
+  perSession   Decimal  @default(0) @db.Decimal(12, 2)
+  commission   Decimal  @default(0) @db.Decimal(12, 2)
+  bonus        Decimal  @default(0) @db.Decimal(12, 2)
+  penalty      Decimal  @default(0) @db.Decimal(12, 2)
+  total        Decimal  @default(0) @db.Decimal(12, 2)
   calculatedAt DateTime @default(now())
 
-  member       Member   @relation("PayrollsForMember", fields: [memberId], references: [id])
+  member Member @relation("PayrollsForMember", fields: [memberId], references: [id])
 
   @@unique([memberId, month, year])
+}
+
+model ProgressPhoto {
+  id           String   @id @default(cuid())
+  customerId   String
+  url          String
+  takenAt      DateTime @default(now())
+  uploadedById String?
+
+  customer   Customer @relation(fields: [customerId], references: [id])
+  uploadedBy Member?  @relation("MemberUploadedPhotos", fields: [uploadedById], references: [id])
 }

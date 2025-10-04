@@ -2,74 +2,71 @@
 
 import { NextResponse } from "next/server";
 import { PrismaClient } from "../../../generated/prisma/client";
+import { auth } from "@clerk/nextjs/server";
 
 const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
+    const { userId } = await auth(); // lấy user đang đăng nhập
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
 
-    const {
-      fullName,
-      dateOfBirth,
-      gender,
-      type,
-      phone,
-      zaloPhone,
-      needs,
-      source,
-      guardianName,
-      guardianPhone,
-      guardianZalo,
-      branch,
-      customerCode,
-      avatarUrl,
-    } = body;
-
+    // Gán mặc định createdBy và careCoach = user hiện tại
     const newCustomer = await prisma.customer.create({
       data: {
-        fullName,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-        gender,
-        type,
-        needs,
-        source,
-        avatarUrl,
-        guardianName,
-        guardianPhone,
-        guardianZalo,
+        code: body.code,
+        type: body.type, // "ADULT" | "CHILD" | ...
+        fullName: body.fullName,
+        dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
+        gender: body.gender,
+        avatarUrl: body.avatarUrl,
+
+        nationalId: body.nationalId,
+        currentAddress: body.currentAddress,
+        height: body.height ? parseFloat(body.height) : null,
+        weight: body.weight ? parseFloat(body.weight) : null,
+
+        guardianName: body.guardianName,
+        guardianPhone: body.guardianPhone,
+        guardianZalo: body.guardianZalo,
+
+        zaloPhone: body.zaloPhone,
+        needs: body.needs,
+        source: body.source, // phải là enum CustomerSource hợp lệ
+
         branch: {
-          connect: { id: branch }, // giả sử branch.id = "BTX", "ALL"...
+          connect: { id: body.branchId }, // lấy branch từ Select trong form
         },
-        phones: {
-          create: [
-            {
-              phone: phone,
-              label: "main",
-              isPrimary: true,
-            },
-            ...(zaloPhone
-              ? [
-                  {
-                    phone: zaloPhone,
-                    label: "zalo",
-                    isPrimary: false,
-                  },
-                ]
-              : []),
-          ],
+
+        // careCoach = user hiện tại (nếu cần bạn có thể query để map sang Member.id)
+        careCoach: {
+          connect: { userId },
         },
-        // gán code cho khách hàng
-        // bạn cần có field `code` trong model Customer
-        code: customerCode,
+        createdBy: {
+          connect: { userId },
+        },
+
+        phones: body.phones
+          ? {
+              create: body.phones.map((p: any) => ({
+                phone: p.phone,
+                label: p.label,
+                isPrimary: p.isPrimary,
+              })),
+            }
+          : undefined,
       },
     });
 
-    return NextResponse.json(newCustomer, { status: 201 });
-  } catch (err: any) {
-    console.error("Error creating customer:", err);
+    return NextResponse.json(newCustomer);
+  } catch (err) {
+    console.error("❌ Error creating customer:", err);
     return NextResponse.json(
-      { error: "Failed to create customer" },
+      { error: "Error creating customer" },
       { status: 500 }
     );
   }
