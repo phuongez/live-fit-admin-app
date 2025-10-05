@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { WebhookEvent } from "@clerk/nextjs/server";
-import { PrismaClient } from "../../../generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 

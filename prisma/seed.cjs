@@ -1,17 +1,17 @@
-import { PrismaClient } from "../generated/prisma/client";
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function main() {
   await prisma.branch.createMany({
     data: [
-      { id: "ALL", name: "Mặc định (ALL)", address: "" },
+      { id: "ALL", name: "Mặc định (ALL)" },
       { id: "BTX", name: "Bùi Thị Xuân" },
       { id: "TK", name: "Thuỵ Khuê" },
       { id: "OCEAN", name: "Ocean Park" },
       { id: "NVC", name: "Nguyễn Văn Cừ" },
       { id: "SGP", name: "Sài Gòn Pearl" },
     ],
-    skipDuplicates: true, // tránh lỗi nếu đã có
+    skipDuplicates: true,
   });
   console.log("✅ Seeded branches");
 }

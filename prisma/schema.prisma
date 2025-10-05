@@ -2,7 +2,7 @@
 generator client {
   provider = "prisma-client-js"
   // Bạn có thể đổi/xoá dòng output nếu muốn dùng mặc định
-  output   = "../generated/prisma"
+  // output   = "../generated/prisma"
 }
 
 datasource db {

@@ -105,6 +105,7 @@ export default function CustomerIndex() {
       dateOfBirth,
       gender,
       type,
+      code: customerCode,
       phone,
       zaloPhone,
       needs,
@@ -284,10 +285,11 @@ export default function CustomerIndex() {
                   />
                   <Select value={branch} onValueChange={setBranch}>
                     <SelectTrigger>
-                      {branches.find(b => b.id === branch)?.name || "Chọn chi nhánh"}
+                      {branches.find((b) => b.id === branch)?.name ||
+                        "Chọn chi nhánh"}
                     </SelectTrigger>
                     <SelectContent>
-                      {branches.map(b => (
+                      {branches.map((b) => (
                         <SelectItem key={b.id} value={b.id}>
                           {b.name}
                         </SelectItem>
