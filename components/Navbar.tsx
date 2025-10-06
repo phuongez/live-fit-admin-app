@@ -35,7 +35,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="flex items-center justify-between bg-[#ffc634ff] shadow px-4">
+    <div className="flex items-center justify-between bg-[#ffc634ff] shadow px-12">
       {/* Links */}
       <div className="flex justify-between items-center gap-6">
         <Link href="/">

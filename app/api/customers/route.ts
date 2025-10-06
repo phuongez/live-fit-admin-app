@@ -75,24 +75,32 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
-  try {
-    const customers = await prisma.customer.findMany({
-      include: {
-        branch: true,
-        careCoach: {
-          select: { id: true, fullName: true, email: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const page = parseInt(url.searchParams.get("page") || "1");
+  const limit = parseInt(url.searchParams.get("limit") || "10");
+  const search = url.searchParams.get("search") || "";
 
-    return NextResponse.json(customers);
-  } catch (err) {
-    console.error("❌ Error fetching customers:", err);
-    return NextResponse.json(
-      { error: "Error fetching customers" },
-      { status: 500 }
-    );
-  }
+  const where = {
+    OR: [
+      { fullName: { contains: search, mode: "insensitive" as const } },
+      { zaloPhone: { contains: search } },
+    ],
+  };
+
+  const [customers, total] = await Promise.all([
+    prisma.customer.findMany({
+      where,
+      include: { branch: true, careCoach: true },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.customer.count({ where }),
+  ]);
+
+  return NextResponse.json({
+    customers,
+    totalPages: Math.ceil(total / limit),
+  });
 }
