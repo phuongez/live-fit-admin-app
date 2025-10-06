@@ -15,6 +15,11 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
+    const branchConnect =
+      body.branchId && body.branchId !== ""
+        ? { connect: { id: body.branchId } }
+        : { connect: { id: "ALL" } }; // gán mặc định ALL nếu không có
+
     // Gán mặc định createdBy và careCoach = user hiện tại
     const newCustomer = await prisma.customer.create({
       data: {
@@ -38,9 +43,7 @@ export async function POST(req: Request) {
         needs: body.needs,
         source: body.source, // phải là enum CustomerSource hợp lệ
 
-        branch: {
-          connect: { id: body.branchId }, // lấy branch từ Select trong form
-        },
+        branch: branchConnect,
 
         // careCoach = user hiện tại (nếu cần bạn có thể query để map sang Member.id)
         careCoach: {
@@ -67,6 +70,28 @@ export async function POST(req: Request) {
     console.error("❌ Error creating customer:", err);
     return NextResponse.json(
       { error: "Error creating customer" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    const customers = await prisma.customer.findMany({
+      include: {
+        branch: true,
+        careCoach: {
+          select: { id: true, fullName: true, email: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json(customers);
+  } catch (err) {
+    console.error("❌ Error fetching customers:", err);
+    return NextResponse.json(
+      { error: "Error fetching customers" },
       { status: 500 }
     );
   }

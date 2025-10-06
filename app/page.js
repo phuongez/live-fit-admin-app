@@ -133,6 +133,7 @@ export default function CustomerIndex() {
       setPhone("");
       setPreviewUrl("");
       // TODO: refresh bảng khách hàng
+      console.log("Submitting customer:", body.branchId);
     } catch (err) {
       console.error(err);
       alert("Có lỗi xảy ra khi tạo khách hàng");
