@@ -74,6 +74,20 @@ enum ScheduleStatus {
   CANCELLED
 }
 
+enum ContractOrderType {
+  MARKETING
+  REFER
+  RENEW
+  MEMBER
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CARD
+  QR
+}
+
 // ===== Tổ chức =====
 model Branch {
   id        String   @id @default(cuid())
@@ -152,6 +166,8 @@ model Member {
   payrolls       Payroll[]       @relation("PayrollsForMember")
 
   uploadedPhotos ProgressPhoto[] @relation("MemberUploadedPhotos")
+
+  approvedContracts Contract[] @relation("ApprovedContracts")
 }
 
 // ===== Khách hàng (CRM) =====
@@ -239,7 +255,7 @@ model CustomerStageLog {
 // ===== Hợp đồng =====
 model Contract {
   id String @id @default(cuid())
-
+  code            String   @unique
   category ContractCategory
   audience ContractAudience
   modality ContractModality
@@ -280,6 +296,17 @@ model Contract {
 
   schedules Schedule[] @relation("ContractSchedules")
 
+    // 🔹 Loại đơn: marketing, refer, renew, member
+  orderType       ContractOrderType?             // enum mới (bên dưới)
+
+  // 🔹 Hình thức thanh toán chính
+  paymentMethod   PaymentMethod?                 // enum mới (bên dưới)
+
+    isApproved      Boolean   @default(false)
+  approvedById    String?
+  approvedBy      Member?   @relation("ApprovedContracts", fields: [approvedById], references: [id])
+  note            String?
+
   @@index([branchId])
   @@index([sellerId])
   @@index([serviceCoachId])
@@ -301,8 +328,9 @@ model Payment {
   contractId String
   contract   Contract @relation(fields: [contractId], references: [id])
   amount     Decimal  @db.Decimal(12, 2)
-  method     String // cash, bank, card, QR...
-  paidAt     DateTime @default(now())
+  method     PaymentMethod              // 🔹 thay string bằng enum
+  isDeposit  Boolean   @default(false)  // 🔹 tiền cọc hay thanh toán chính
+  paidAt     DateTime  @default(now())
 
   @@index([contractId, paidAt])
 }

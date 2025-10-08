@@ -12,6 +12,7 @@ export default function CustomersPage() {
     gender: "ALL",
     status: "ALL",
     serviceStatus: "ALL",
+    stage: "ALL",
   });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -39,7 +40,7 @@ export default function CustomersPage() {
   return (
     <div className="flex">
       {/* Bộ lọc bên trái */}
-      <div className="w-64 border-r bg-gray-50 p-4">
+      <div className="w-70 border-r bg-gray-50 p-4 min-h-screen">
         <CustomerFilters filters={filters} setFilters={setFilters} />
       </div>
 

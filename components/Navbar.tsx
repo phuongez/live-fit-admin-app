@@ -14,7 +14,7 @@ import Logo from "../imgs/livefitlogo.png";
 import { Button } from "./ui/button";
 
 const navItems = [
-  { label: "Khách hàng", path: "/", roles: ["ALL"] },
+  { label: "Khách hàng", path: "/customers", roles: ["ALL"] },
   { label: "Hợp đồng", path: "/hopdong", roles: ["ALL"] },
   { label: "Đặt lịch tập", path: "/lichtap", roles: ["ALL"] },
   { label: "Nhân sự", path: "/nhansu", roles: ["ADMIN", "MANAGER"] },
