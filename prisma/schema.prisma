@@ -168,6 +168,9 @@ model Member {
   uploadedPhotos ProgressPhoto[] @relation("MemberUploadedPhotos")
 
   approvedContracts Contract[] @relation("ApprovedContracts")
+
+  requestedEdits CustomerEditRequest[] @relation("RequestedEdits")
+approvedEdits  CustomerEditRequest[] @relation("ApprovedEdits")
 }
 
 // ===== Khách hàng (CRM) =====
@@ -220,6 +223,8 @@ model Customer {
   contractParticipants ContractParticipant[]
   schedules            Schedule[]            @relation("CustomerSchedules")
   attendances          SessionAttendance[]
+
+  editRequests CustomerEditRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -478,4 +483,28 @@ model ProgressPhoto {
 
   customer   Customer @relation(fields: [customerId], references: [id])
   uploadedBy Member?  @relation("MemberUploadedPhotos", fields: [uploadedById], references: [id])
+}
+
+model CustomerEditRequest {
+  id           String   @id @default(cuid())
+  customerId   String
+  field        String               // Trường được sửa, ví dụ: "phone", "address"
+  oldValue     String?
+  newValue     String?
+  note         String?              // Ghi chú từ người đề xuất
+  status       EditStatus @default(PENDING)
+  requestedById String
+  requestedBy   Member  @relation("RequestedEdits", fields: [requestedById], references: [id])
+  approvedById  String?
+  approvedBy    Member? @relation("ApprovedEdits", fields: [approvedById], references: [id])
+  reviewedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+}
+
+enum EditStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

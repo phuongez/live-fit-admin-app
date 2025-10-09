@@ -9,9 +9,17 @@ import {
   UserButton,
   useUser,
 } from "@clerk/nextjs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import Logo from "../imgs/livefitlogo.png";
 import { Button } from "./ui/button";
+import { usePathname } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 
 const navItems = [
   { label: "Khách hàng", path: "/customers", roles: ["ALL"] },
@@ -25,9 +33,11 @@ const navItems = [
 
 export default function Navbar() {
   const { user } = useUser();
+  const pathname = usePathname();
 
   // Giả sử role được lưu trong user.publicMetadata.role
   const role = user?.publicMetadata?.role as string;
+  const isManager = role === "MANAGER" || role === "ADMIN";
 
   const isAllowed = (roles: string[]) => {
     if (roles.includes("ALL")) return true;
@@ -70,6 +80,28 @@ export default function Navbar() {
               Hồ sơ của tôi
             </Link>
           </Button>
+        )}
+        {isManager && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant={pathname.startsWith("/manage") ? "default" : "ghost"}
+              >
+                Quản lý <ChevronDown size={16} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem asChild>
+                <Link href="/manage/customers">Sửa thông tin khách hàng</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/manage/contracts">Sửa hợp đồng</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/manage/kpi">Giao KPI</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
       <header className="flex self justify-end items-center p-2 gap-4 h-fit">
