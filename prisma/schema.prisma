@@ -486,19 +486,17 @@ model ProgressPhoto {
 }
 
 model CustomerEditRequest {
-  id           String   @id @default(cuid())
-  customerId   String
-  field        String               // Trường được sửa, ví dụ: "phone", "address"
-  oldValue     String?
-  newValue     String?
-  note         String?              // Ghi chú từ người đề xuất
-  status       EditStatus @default(PENDING)
-  requestedById String
-  requestedBy   Member  @relation("RequestedEdits", fields: [requestedById], references: [id])
-  approvedById  String?
-  approvedBy    Member? @relation("ApprovedEdits", fields: [approvedById], references: [id])
-  reviewedAt    DateTime?
-  createdAt     DateTime @default(now())
+  id             String   @id @default(cuid())
+  customerId     String
+  changes        Json               // 🔹 chứa danh sách thay đổi: { fullName: "mới", weight: "70" }
+  note           String?
+  status         EditStatus @default(PENDING)
+  requestedById  String
+  requestedBy    Member @relation("RequestedEdits", fields: [requestedById], references: [id])
+  approvedById   String?
+  approvedBy     Member? @relation("ApprovedEdits", fields: [approvedById], references: [id])
+  reviewedAt     DateTime?
+  createdAt      DateTime @default(now())
 
   customer Customer @relation(fields: [customerId], references: [id])
 }

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import CustomerDetailModal from "./CustomerDetailModal";
 
 export default function CustomerTable({ customers, page, setPage, totalPages }) {
     const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -74,7 +75,7 @@ export default function CustomerTable({ customers, page, setPage, totalPages }) 
             </div>
 
             {/* Modal chi tiết khách hàng */}
-            <Dialog open={!!selectedCustomer} onOpenChange={() => setSelectedCustomer(null)}>
+            {/* <Dialog open={!!selectedCustomer} onOpenChange={() => setSelectedCustomer(null)}>
                 <DialogContent className="max-w-2xl">
                     <DialogTitle>Chi tiết khách hàng</DialogTitle>
                     {selectedCustomer && (
@@ -88,7 +89,11 @@ export default function CustomerTable({ customers, page, setPage, totalPages }) 
                         </div>
                     )}
                 </DialogContent>
-            </Dialog>
+            </Dialog> */}
+            <CustomerDetailModal
+                selectedCustomer={selectedCustomer}
+                setSelectedCustomer={setSelectedCustomer}
+            />
         </>
     );
 }

@@ -1,75 +1,60 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// ===== GET: Danh sách yêu cầu chờ duyệt =====
-export async function GET(req) {
-    try {
-        const edits = await prisma.customerEditRequest.findMany({
-            where: { status: "PENDING" },
-            include: {
-                customer: true,
-                requestedBy: true,
-            },
-            orderBy: { createdAt: "desc" },
-        });
-
-        return NextResponse.json(edits);
-    } catch (err) {
-        console.error(err);
-        return NextResponse.json({ error: "Lỗi khi tải danh sách" }, { status: 500 });
-    }
+// GET – danh sách yêu cầu chờ duyệt
+export async function GET() {
+    const edits = await prisma.customerEditRequest.findMany({
+        where: { status: "PENDING" },
+        include: { customer: true, requestedBy: true },
+        orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(edits);
 }
 
-// ===== POST: Nhân viên tạo yêu cầu chỉnh sửa =====
+// POST – nhân viên gửi yêu cầu duyệt
 export async function POST(req) {
-    try {
-        const body = await req.json();
-        const { customerId, field, oldValue, newValue, note, requestedById } = body;
+    const body = await req.json();
+    const { customerId, changes, note, requestedById } = body;
 
-        const edit = await prisma.customerEditRequest.create({
-            data: { customerId, field, oldValue, newValue, note, requestedById },
-        });
+    if (!customerId || !requestedById || !changes)
+        return NextResponse.json({ error: "Thiếu thông tin" }, { status: 400 });
 
-        return NextResponse.json(edit, { status: 201 });
-    } catch (err) {
-        console.error(err);
-        return NextResponse.json({ error: "Tạo yêu cầu thất bại" }, { status: 500 });
-    }
+    const edit = await prisma.customerEditRequest.create({
+        data: {
+            customerId,
+            changes,
+            note,
+            requestedById,
+        },
+    });
+
+    return NextResponse.json(edit, { status: 201 });
 }
 
-// ===== PATCH: Manager/Admin duyệt hoặc từ chối =====
+// PATCH – Quản lý duyệt
 export async function PATCH(req) {
-    try {
-        const body = await req.json();
-        const { id, action, approverId } = body;
+    const body = await req.json();
+    const { id, action, approverId } = body;
 
-        const status = action === "approve" ? "APPROVED" : "REJECTED";
+    const edit = await prisma.customerEditRequest.update({
+        where: { id },
+        data: {
+            status: action === "approve" ? "APPROVED" : "REJECTED",
+            approvedById: approverId,
+            reviewedAt: new Date(),
+        },
+    });
 
-        const updated = await prisma.customerEditRequest.update({
+    if (edit.status === "APPROVED") {
+        const full = await prisma.customerEditRequest.findUnique({
             where: { id },
-            data: {
-                status,
-                approvedById: approverId,
-                reviewedAt: new Date(),
-            },
-            include: {
-                customer: true,
-            },
         });
 
-        // Nếu duyệt → cập nhật trực tiếp vào bảng Customer
-        if (status === "APPROVED") {
-            await prisma.customer.update({
-                where: { id: updated.customerId },
-                data: {
-                    [updated.field]: updated.newValue,
-                },
-            });
-        }
-
-        return NextResponse.json(updated);
-    } catch (err) {
-        console.error(err);
-        return NextResponse.json({ error: "Cập nhật thất bại" }, { status: 500 });
+        await prisma.customer.update({
+            where: { id: full.customerId },
+            data: full.changes, // 🔹 cập nhật tất cả trường đã sửa
+        });
     }
+
+    return NextResponse.json(edit);
 }
