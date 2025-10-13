@@ -17,13 +17,24 @@ export async function POST(req: Request) {
         [first_name, last_name].filter(Boolean).join(" ") || "Unnamed";
 
       try {
-        await prisma.member.create({
+        const newMember = await prisma.member.create({
           data: {
             userId: id,
             fullName,
             avatarUrl: image_url,
             email: email_addresses?.[0]?.email_address ?? null,
           },
+        });
+        // 🔹 2. Cập nhật lại publicMetadata của user trong Clerk
+        await fetch(`https://api.clerk.com/v1/users/${clerkId}/metadata`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${process.env.CLERK_WEBHOOK_SECRET}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            public_metadata: { memberId: newMember.id },
+          }),
         });
         console.log(`✅ Created member for userId=${id}`);
       } catch (dbErr: any) {

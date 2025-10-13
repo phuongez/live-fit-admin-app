@@ -43,6 +43,7 @@ enum CustomerSource {
   GOOGLE_ADS
   TIKTOK_ADS
   WEBSITE
+  FANPAGE
 }
 
 enum ContractCategory {

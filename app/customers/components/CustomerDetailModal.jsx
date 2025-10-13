@@ -27,6 +27,7 @@ export default function CustomerEditModal({
   const { user } = useUser();
   const memberId = user?.publicMetadata?.memberId;
   const [form, setForm] = useState({});
+  const [phones, setPhones] = useState([]);
   const [note, setNote] = useState("");
   const [previewUrl, setPreviewUrl] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -34,6 +35,16 @@ export default function CustomerEditModal({
 
   const [branches, setBranches] = useState([]);
   const [branch, setBranch] = useState("ALL");
+
+  const [coaches, setCoaches] = useState([]);
+  useEffect(() => {
+    async function fetchCoaches() {
+      const res = await fetch(`/api/members?branchId=${form.branch || "ALL"}`);
+      const data = await res.json();
+      setCoaches(data);
+    }
+    if (form.branch) fetchCoaches();
+  }, [form.branch]);
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -53,7 +64,6 @@ export default function CustomerEditModal({
         gender: selectedCustomer.gender || "",
         type: selectedCustomer.type || "ADULT",
         customerCode: selectedCustomer.code || "",
-        phone: selectedCustomer.phones?.[0]?.phone || "",
         zaloPhone: selectedCustomer.zaloPhone || "",
         needs: selectedCustomer.needs || "",
         branch: selectedCustomer.branchId || "",
@@ -63,6 +73,15 @@ export default function CustomerEditModal({
         guardianZalo: selectedCustomer.guardianZalo || "",
         avatarUrl: selectedCustomer.avatarUrl || "",
       });
+      setPhones(
+        selectedCustomer.phones?.length
+          ? selectedCustomer.phones.map((p) => ({
+              phone: p.phone,
+              label: p.label || (p.isPrimary ? "Chính" : "Phụ"),
+              isPrimary: p.isPrimary || false,
+            }))
+          : [{ phone: "", label: "Chính", isPrimary: true }]
+      );
       setPreviewUrl(selectedCustomer.avatarUrl || null);
       setIsEditing(false);
     }
@@ -70,10 +89,49 @@ export default function CustomerEditModal({
 
   const handleChange = (key, val) => setForm((p) => ({ ...p, [key]: val }));
 
-  const handleFileUpload = (e) => {
+  async function handleFileUpload(e) {
     const file = e.target.files?.[0];
-    if (file) setPreviewUrl(URL.createObjectURL(file));
-  };
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "unsigned_upload");
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/ds30pv4oa/image/upload",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await res.json();
+    setForm((prev) => ({ ...prev, avatarUrl: data.secure_url }));
+  }
+
+  // Thêm 1 số mới
+  function handleAddPhone() {
+    setPhones((prev) => [
+      ...prev,
+      { phone: "", label: "Phụ", isPrimary: false },
+    ]);
+  }
+
+  // Sửa giá trị số theo index
+  function handleChangePhone(index, value) {
+    setPhones((prev) =>
+      prev.map((p, i) => (i === index ? { ...p, phone: value } : p))
+    );
+  }
+
+  // Xóa số
+  function handleRemovePhone(index) {
+    setPhones((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  // Đặt số chính
+  function handleSetPrimary(index) {
+    setPhones((prev) => prev.map((p, i) => ({ ...p, isPrimary: i === index })));
+  }
 
   const handleSubmit = async () => {
     if (!selectedCustomer) return;
@@ -89,18 +147,53 @@ export default function CustomerEditModal({
       }
     });
 
+    if (
+      JSON.stringify(
+        phones.map((p) => ({ phone: p.phone, isPrimary: p.isPrimary }))
+      ) !==
+      JSON.stringify(
+        (selectedCustomer.phones || []).map((p) => ({
+          phone: p.phone,
+          isPrimary: p.isPrimary,
+        }))
+      )
+    ) {
+      changes.phones = phones;
+    }
+
     if (Object.keys(changes).length === 0) {
       alert("Không có thay đổi nào để gửi phê duyệt.");
       return;
     }
 
     setSubmitting(true);
-    const res = await fetch("/api/customer-edits", {
+    const correctedChanges = { ...changes };
+
+    // 1️⃣ Chuyển branch → branchId
+    if (correctedChanges.branch) {
+      correctedChanges.branchId = correctedChanges.branch;
+      delete correctedChanges.branch;
+    }
+
+    // 2️⃣ Chuyển careCoach → careCoachId
+    if (correctedChanges.careCoach) {
+      correctedChanges.careCoachId = correctedChanges.careCoach;
+      delete correctedChanges.careCoach;
+    }
+
+    // 3️⃣ Chuyển customerCode → code
+    if (correctedChanges.customerCode) {
+      correctedChanges.code = correctedChanges.customerCode;
+      delete correctedChanges.customerCode;
+    }
+
+    // Gửi đúng format
+    await fetch("/api/customer-edits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         customerId: selectedCustomer.id,
-        changes,
+        changes: correctedChanges,
         note,
         requestedById: memberId,
       }),
@@ -123,13 +216,13 @@ export default function CustomerEditModal({
       open={!!selectedCustomer}
       onOpenChange={() => setSelectedCustomer(null)}
     >
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl p-6 scrollbar-thin scrollbar-track-transparent">
         <DialogHeader>
           <DialogTitle>Thông tin khách hàng</DialogTitle>
         </DialogHeader>
 
         {/* Nút Edit */}
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end mb-2 pr-4">
           {!isEditing && (
             <Button
               variant="outline"
@@ -144,7 +237,7 @@ export default function CustomerEditModal({
         <div className="grid grid-cols-2 gap-4 mt-2">
           {/* ======= Họ tên ======= */}
           <div>
-            <Label>Họ và tên</Label>
+            <Label className="mb-2">Họ và tên</Label>
             <Input
               value={form.fullName}
               disabled={!isEditing}
@@ -154,7 +247,7 @@ export default function CustomerEditModal({
 
           {/* ======= Ngày sinh ======= */}
           <div>
-            <Label>Ngày sinh</Label>
+            <Label className="mb-2">Ngày sinh</Label>
             <Input
               type="date"
               value={form.dateOfBirth}
@@ -165,7 +258,7 @@ export default function CustomerEditModal({
 
           {/* ======= Giới tính ======= */}
           <div>
-            <Label>Giới tính</Label>
+            <Label className="mb-2">Giới tính</Label>
             <Select
               disabled={!isEditing}
               value={form.gender}
@@ -183,7 +276,7 @@ export default function CustomerEditModal({
 
           {/* ======= Loại khách hàng ======= */}
           <div>
-            <Label>Loại khách hàng</Label>
+            <Label className="mb-2">Loại khách hàng</Label>
             <Select
               disabled={!isEditing}
               value={form.type}
@@ -199,69 +292,9 @@ export default function CustomerEditModal({
             </Select>
           </div>
 
-          {/* ======= Mã KH ======= */}
-          <div>
-            <Label>Mã khách hàng</Label>
-            <Input value={form.customerCode} readOnly disabled />
-          </div>
-
-          {/* ======= Ảnh đại diện ======= */}
-          <div className="col-span-2 space-y-2">
-            <Label>Ảnh đại diện hiện tại</Label>
-            {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="Avatar"
-                className="w-32 h-32 rounded-md object-cover"
-              />
-            ) : (
-              <div className="w-32 h-32 bg-gray-100 rounded-md flex items-center justify-center text-sm text-gray-500">
-                Không có ảnh
-              </div>
-            )}
-            {isEditing && (
-              <div>
-                <Label>Đổi ảnh đại diện</Label>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* ======= Liên hệ ======= */}
-          <div>
-            <Label>Số điện thoại</Label>
-            <Input
-              value={form.phone}
-              disabled={!isEditing}
-              onChange={(e) => handleChange("phone", e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Label>Số điện thoại Zalo</Label>
-            <Input
-              value={form.zaloPhone}
-              disabled={!isEditing}
-              onChange={(e) => handleChange("zaloPhone", e.target.value)}
-            />
-          </div>
-
-          <div className="col-span-2">
-            <Label>Nhu cầu</Label>
-            <Input
-              value={form.needs}
-              disabled={!isEditing}
-              onChange={(e) => handleChange("needs", e.target.value)}
-            />
-          </div>
-
           {/* ======= Chi nhánh ======= */}
           <div>
-            <Label>Chi nhánh</Label>
+            <Label className="mb-2">Chi nhánh</Label>
             <Select
               disabled={!isEditing}
               value={form.branch}
@@ -279,10 +312,128 @@ export default function CustomerEditModal({
               </SelectContent>
             </Select>
           </div>
+          <div>
+            <Label className="mb-2">HLV phụ trách</Label>
+            <Select
+              disabled={!isEditing}
+              value={form.careCoach || ""}
+              onValueChange={(v) => handleChange("careCoach", v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn HLV phụ trách" />
+              </SelectTrigger>
+              <SelectContent>
+                {coaches.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.fullName} ({c.role})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* ======= Mã KH ======= */}
+          <div>
+            <Label className="mb-2">Mã khách hàng</Label>
+            <Input value={form.customerCode} readOnly disabled />
+          </div>
+
+          {/* ======= Ảnh đại diện ======= */}
+          <div className="col-span-2 space-y-2">
+            <Label className="mb-2">Ảnh đại diện hiện tại</Label>
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Avatar"
+                className="w-32 h-32 rounded-md object-cover"
+              />
+            ) : (
+              <div className="w-32 h-32 bg-gray-100 rounded-md flex items-center justify-center text-sm text-gray-500">
+                Không có ảnh
+              </div>
+            )}
+            {isEditing && (
+              <div>
+                <Label className="mb-2">Đổi ảnh đại diện</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* ======= Liên hệ ======= */}
+          <div className="col-span-2 space-y-2">
+            <Label className="mb-2">Số điện thoại</Label>
+            {phones.map((p, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  placeholder={`Số ${index + 1}`}
+                  value={p.phone}
+                  disabled={!isEditing}
+                  onChange={(e) => handleChangePhone(index, e.target.value)}
+                />
+                {isEditing && (
+                  <>
+                    <input
+                      type="radio"
+                      name="primaryPhone"
+                      checked={p.isPrimary}
+                      onChange={() => handleSetPrimary(index)}
+                      disabled={!isEditing}
+                    />
+                    <span className="text-xs">
+                      {p.isPrimary ? "Chính" : "Phụ"}
+                    </span>
+                    {index > 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRemovePhone(index)}
+                      >
+                        Xóa
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+            ))}
+            {isEditing && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddPhone}
+              >
+                + Thêm số điện thoại
+              </Button>
+            )}
+          </div>
+
+          <div>
+            <Label className="mb-2">Số điện thoại Zalo</Label>
+            <Input
+              value={form.zaloPhone}
+              disabled={!isEditing}
+              onChange={(e) => handleChange("zaloPhone", e.target.value)}
+            />
+          </div>
+
+          <div className="col-span-2">
+            <Label className="mb-2">Nhu cầu</Label>
+            <Input
+              value={form.needs}
+              disabled={!isEditing}
+              onChange={(e) => handleChange("needs", e.target.value)}
+            />
+          </div>
 
           {/* ======= Nguồn khách hàng ======= */}
           <div>
-            <Label>Nguồn khách hàng</Label>
+            <Label className="mb-2">Nguồn khách hàng</Label>
             <Select
               disabled={!isEditing}
               value={form.source}
@@ -300,6 +451,7 @@ export default function CustomerEditModal({
                 <SelectItem value="GOOGLE_ADS">Google Ads</SelectItem>
                 <SelectItem value="TIKTOK_ADS">Tiktok Ads</SelectItem>
                 <SelectItem value="WEBSITE">Website</SelectItem>
+                <SelectItem value="FANPAGE">Fanpage</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -308,7 +460,7 @@ export default function CustomerEditModal({
           {form.type === "CHILD" && (
             <>
               <div>
-                <Label>Tên giám hộ</Label>
+                <Label className="mb-2">Tên giám hộ</Label>
                 <Input
                   value={form.guardianName}
                   disabled={!isEditing}
@@ -316,7 +468,7 @@ export default function CustomerEditModal({
                 />
               </div>
               <div>
-                <Label>Điện thoại giám hộ</Label>
+                <Label className="mb-2">Điện thoại giám hộ</Label>
                 <Input
                   value={form.guardianPhone}
                   disabled={!isEditing}
@@ -326,7 +478,7 @@ export default function CustomerEditModal({
                 />
               </div>
               <div>
-                <Label>Zalo giám hộ</Label>
+                <Label className="mb-2">Zalo giám hộ</Label>
                 <Input
                   value={form.guardianZalo}
                   disabled={!isEditing}
@@ -338,7 +490,7 @@ export default function CustomerEditModal({
 
           {isEditing && (
             <div className="col-span-2">
-              <Label>Ghi chú lý do chỉnh sửa</Label>
+              <Label className="mb-2">Ghi chú lý do chỉnh sửa</Label>
               <Textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}

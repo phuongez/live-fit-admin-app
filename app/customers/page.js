@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import CustomerFilters from "./components/CustomerFilters";
 import CustomerTable from "./components/CustomerTable";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import CreateCustomerDialog from "./components/CreateCustomerDialog";
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
@@ -48,6 +50,7 @@ export default function CustomersPage() {
       <div className="flex-1 p-6">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-bold">Danh sách khách hàng</h1>
+          <CreateCustomerDialog />
           <Input
             placeholder="Tìm theo tên hoặc số điện thoại..."
             value={search}
